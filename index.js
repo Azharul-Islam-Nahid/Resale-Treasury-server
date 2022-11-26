@@ -132,6 +132,17 @@ async function run() {
 
         app.post('/orders', verifyJWT, async (req, res) => {
             const buyer = req.body;
+            const query = {
+                product: buyer.product
+            }
+
+            const alreadyBooked = await ordersCollection.find(query).toArray();
+
+            if (alreadyBooked.length) {
+                const message = `This product is already booked`
+                return res.send({ acknowledged: false, message })
+            }
+
             const result = await ordersCollection.insertOne(buyer);
             res.send(result);
         })
@@ -139,7 +150,8 @@ async function run() {
 
 
         app.get('/orders', verifyJWT, async (req, res) => {
-            const query = {};
+            const email = req.query.email;
+            const query = { email: email };
             const orders = await ordersCollection.find(query).toArray();
             res.send(orders);
         })
