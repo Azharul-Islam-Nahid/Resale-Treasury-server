@@ -38,8 +38,9 @@ async function run() {
         const phoneCategories = client.db('resaleTreasury').collection('categories');
         const categoryItems = client.db('resaleTreasury').collection('categoryItems');
         const usersCollection = client.db('resaleTreasury').collection('users');
+        const ordersCollection = client.db('resaleTreasury').collection('orders');
 
-        app.get('/categories', verifyJWT, async (req, res) => {
+        app.get('/categories', async (req, res) => {
             const query = {}
             const category = await phoneCategories.find(query).toArray();
             res.send(category)
@@ -79,6 +80,14 @@ async function run() {
         app.post('/users', async (req, res) => {
             const user = req.body;
             const result = await usersCollection.insertOne(user);
+            res.send(result);
+        })
+
+
+
+        app.post('/orders', verifyJWT, async (req, res) => {
+            const buyer = req.body;
+            const result = await ordersCollection.insertOne(buyer);
             res.send(result);
         })
 
