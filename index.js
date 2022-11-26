@@ -62,7 +62,7 @@ async function run() {
             const query = { email: email }
             const user = await usersCollection.findOne(query)
             if (user) {
-                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1h' })
+                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '2d' })
                 return res.send({ accessToken: token });
 
             }
@@ -89,6 +89,14 @@ async function run() {
             const buyer = req.body;
             const result = await ordersCollection.insertOne(buyer);
             res.send(result);
+        })
+
+
+
+        app.get('/orders', verifyJWT, async (req, res) => {
+            const query = {};
+            const orders = await ordersCollection.find(query).toArray();
+            res.send(orders);
         })
 
 
