@@ -103,6 +103,15 @@ async function run() {
             res.send({ isAdmin: user?.role === 'admin' });
         })
 
+        app.get('/buyers/:role', async (req, res) => {
+            const role = req.params.role;
+            const query = { role }
+            const cursor = usersCollection.find(query)
+            const buyers = await cursor.toArray()
+            res.send(buyers)
+        })
+
+
 
 
 
