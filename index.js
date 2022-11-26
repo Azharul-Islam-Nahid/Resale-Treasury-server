@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const port = process.env.PORT || 5000;
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
@@ -81,6 +81,19 @@ async function run() {
 
 
 
+        // app.get('/categories', async (req, res) => {
+        //     const brand = req.body;
+
+        //     const query = {
+        //         brand: brand
+        //     }
+        //     const cursor = categoryItems.find(query)
+        //     const phones = await cursor.toArray()
+        //     res.send(phones)
+        // })
+
+
+
         app.get('/jwt', async (req, res) => {
             const email = req.query.email
             const query = { email: email }
@@ -103,12 +116,12 @@ async function run() {
             res.send({ isAdmin: user?.role === 'admin' });
         })
 
-        app.get('/buyers/:role', async (req, res) => {
+        app.get('/users/:role', verifyJWT, verifyAdmin, async (req, res) => {
             const role = req.params.role;
             const query = { role }
             const cursor = usersCollection.find(query)
-            const buyers = await cursor.toArray()
-            res.send(buyers)
+            const usersRole = await cursor.toArray()
+            res.send(usersRole)
         })
 
 
@@ -154,6 +167,15 @@ async function run() {
             const query = { email: email };
             const orders = await ordersCollection.find(query).toArray();
             res.send(orders);
+        })
+
+
+
+        app.delete('/users/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const result = await usersCollection.deleteOne(filter);
+            return res.send(result);
         })
 
 
