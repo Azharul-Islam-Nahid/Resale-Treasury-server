@@ -171,6 +171,14 @@ async function run() {
 
 
 
+        app.post('/addProduct', async (req, res) => {
+            const product = req.body;
+            const result = await categoryItems.insertOne(product);
+            res.send(result);
+        })
+
+
+
         app.post('/orders', verifyJWT, async (req, res) => {
             const buyer = req.body;
             const query = {
@@ -195,7 +203,7 @@ async function run() {
             const price = orderDetails.price;
             const amount = price * 100;
 
-            // Create a PaymentIntent with the order amount and currency
+
             const paymentIntent = await stripe.paymentIntents.create({
                 currency: 'usd',
                 amount: amount,
