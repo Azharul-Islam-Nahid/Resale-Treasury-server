@@ -29,6 +29,7 @@ async function run() {
         const usersCollection = client.db('resaleTreasury').collection('users');
         const ordersCollection = client.db('resaleTreasury').collection('orders');
         const paymentsCollection = client.db('resaleTreasury').collection('payment');
+        const advertiseCollection = client.db('resaleTreasury').collection('advertise');
 
 
 
@@ -152,6 +153,13 @@ async function run() {
             res.send(usersRole)
         })
 
+        app.get('/getProduct', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const products = await categoryItems.find(query).toArray();
+            res.send(products);
+        })
+
 
 
 
@@ -171,11 +179,21 @@ async function run() {
 
 
 
-        app.post('/addProduct', async (req, res) => {
+        app.post('/addProduct', verifyJWT, verifySeller, async (req, res) => {
             const product = req.body;
             const result = await categoryItems.insertOne(product);
             res.send(result);
         })
+
+
+
+
+        app.post('/addProductTohome', verifyJWT, verifySeller, async (req, res) => {
+            const product = req.body;
+            const result = await advertiseCollection.insertOne(product);
+            res.send(result);
+        })
+
 
 
 
@@ -258,6 +276,12 @@ async function run() {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) }
             const result = await usersCollection.deleteOne(filter);
+            return res.send(result);
+        })
+        app.delete('/deleteProduct/:id', verifyJWT, verifySeller, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const result = await categoryItems.deleteOne(filter);
             return res.send(result);
         })
 
