@@ -99,6 +99,18 @@ async function run() {
 
 
 
+
+
+
+        app.get('/getProductTohome', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const sellPost = await advertiseCollection.find(query).toArray();
+            res.send(sellPost);
+        })
+
+
+
         // app.get('/categories', async (req, res) => {
         //     const brand = req.body;
 
@@ -160,6 +172,13 @@ async function run() {
             res.send(products);
         })
 
+        app.get('/getAddProduct', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const products = await advertiseCollection.find(query).toArray();
+            res.send(products);
+        })
+
 
 
 
@@ -179,6 +198,26 @@ async function run() {
 
 
 
+
+        app.post('/users/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const updatedName = {
+
+                $set: {
+                    status: 'verified'
+                }
+
+            }
+            const result = await usersCollection.updateOne(query, updatedName);
+            res.send(result);
+        })
+
+
+
+
+
+
         app.post('/addProduct', verifyJWT, verifySeller, async (req, res) => {
             const product = req.body;
             const result = await categoryItems.insertOne(product);
@@ -190,6 +229,17 @@ async function run() {
 
         app.post('/addProductTohome', verifyJWT, verifySeller, async (req, res) => {
             const product = req.body;
+            const query = {
+                product_name: product.product_name,
+                posted: product.posted
+            }
+            const alreadyPosted = await advertiseCollection.find(query).toArray();
+
+            if (alreadyPosted.length) {
+                const message = `This product is already advertised`
+                return res.send({ acknowledged: false, message })
+            }
+
             const result = await advertiseCollection.insertOne(product);
             res.send(result);
         })
@@ -201,6 +251,7 @@ async function run() {
             const buyer = req.body;
             const query = {
                 product: buyer.product
+
             }
 
             const alreadyBooked = await ordersCollection.find(query).toArray();
@@ -213,6 +264,7 @@ async function run() {
             const result = await ordersCollection.insertOne(buyer);
             res.send(result);
         })
+
 
 
 
@@ -237,18 +289,25 @@ async function run() {
 
 
 
-        app.post('/payments', async (req, res) => {
+        app.post('/payments', verifyJWT, async (req, res) => {
             const payment = req.body;
             const result = await paymentsCollection.insertOne(payment);
             const id = payment.bookingId;
+            const image = payment.product_img;
             const filter = { _id: ObjectId(id) }
+            // const sellerFilter = {
+            //     product_img: image
+
+            // }
             const updatedDoc = {
                 $set: {
                     paid: true,
                     transactionId: payment.transactionId
                 }
             }
+
             const updatedResult = await ordersCollection.updateOne(filter, updatedDoc)
+            // const updatedSellerResult = await categoryItems.updateOne(sellerFilter, updatedDoc)
             res.send(result);
         })
 
